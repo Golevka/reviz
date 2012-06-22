@@ -171,7 +171,7 @@ struct DFA_state *NFA_to_DFA(const struct NFA *nfa);
 
 void test(void)
 {
-    struct NFA nfa = reg_to_NFA("(a|b)*c");
+    struct NFA nfa = reg_to_NFA("(a|b|c|d)+");
     struct DFA_state *dfa = NFA_to_DFA(&nfa);
 
 

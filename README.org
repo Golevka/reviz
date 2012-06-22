@@ -6,9 +6,9 @@ generate DOT files named nfa.dot and dfa.dot in current working directory,
 which are the finite automatons constructed from that regular expression. These
 dot files can be converted to various image formats by graphviz.
 
-=reviz= is a simple wrapper for the main program which converts generated dot
-files to PostScript format immediately, which can be displayed with various
-document viewer programs.
+=reviz= is a simple wrapper which calls =redot= and converts generated dot
+files to PostScript format, so the result can be displayed immediately with
+various document viewer programs.
 
 
 The "regular expression" this program accepts were only the most basic building

@@ -7,7 +7,6 @@
 #include "dfa.h"
 
 
-
 MAKE_COMPARE_FUNCTION(char, char)
 MAKE_COMPARE_FUNCTION(addr, struct NFA_state*)
 

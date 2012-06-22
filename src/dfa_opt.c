@@ -33,6 +33,20 @@ static struct __DFA_state_set *__create_empty_stateset_list(void)
     return head;
 }
 
+static void __destroy_DFA_stateset_list(struct __DFA_state_set *head)
+{
+    struct __DFA_state_set *cur = head->next, *next;
+    free(head);           /* free head node first  */
+
+    /* then free the rest of the list */
+    for ( ; cur != head; cur = next)
+    {
+        next = cur->next;
+        destroy_generic_list(&cur->dfa_states);
+        free(cur);
+    }    
+}
+
 static void __insert_DFA_state_set_after(
     struct __DFA_state_set *e, struct __DFA_state_set *pivot)
 {
@@ -88,7 +102,7 @@ static struct __DFA_state_set *initialize_DFA_state_set(
 {
     int i_state = 0, n_state;
     struct generic_list state_list, acceptable, nonacceptable;
-    struct DFA_state *state;
+    struct DFA_state **state;
     struct __DFA_state_set *ll_state_set = __create_empty_stateset_list();
 
     create_generic_list(struct DFA_state *, &state_list);
@@ -96,17 +110,18 @@ static struct __DFA_state_set *initialize_DFA_state_set(
     create_generic_list(struct DFA_state *, &nonacceptable);
 
     /* get all states in the DFA */
+    generic_list_push_back(&state_list, &dfa_start);
     DFA_traverse(dfa_start, &state_list);
-    n_state = state_list.length;
 
     /* Initialize state sets by placing all acceptable states to the acceptable
      * list, non-acceptable states goes to nonacceptable list */
-    for (state = (struct DFA_state *) state_list.p_dat; 
+    n_state = state_list.length;
+    for (state = (struct DFA_state **) state_list.p_dat; 
          i_state < n_state; i_state++, state++)
     {
-        state->is_acceptable ? 
-            generic_list_push_back(&acceptable,    &state):
-            generic_list_push_back(&nonacceptable, &state);
+        (*state)->is_acceptable ? 
+            generic_list_push_back(&acceptable,    state):
+            generic_list_push_back(&nonacceptable, state);
     }
 
     __insert_states_after(&acceptable,    ll_state_set);
@@ -159,13 +174,17 @@ void test(void)
     struct NFA nfa = reg_to_NFA("(a|b)*c");
     struct DFA_state *dfa = NFA_to_DFA(&nfa);
 
+
     struct __DFA_state_set *ss = initialize_DFA_state_set(dfa);
     struct __DFA_state_set *cur = ss->next;
+
+    /* DFA_dump_graphviz_code(dfa, stdout); */
 
     for ( ; cur != ss; cur = cur->next) {
         printf("%d\n", cur->dfa_states.length);
     }
     
+    __destroy_DFA_stateset_list(ss);
 
     NFA_dispose(&nfa);
     DFA_dispose(dfa);

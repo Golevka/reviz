@@ -1,6 +1,8 @@
 #include "glist.h"
 #include "dfa.h"
 
+#include "nfa.h"                /* to be removed after test */
+
 
 
 /* Each state set contains one or more DFA states, DFA optimization procedure
@@ -16,7 +18,7 @@ static struct __DFA_state_set
 {
     struct __DFA_state_set *prev;
     struct __DFA_state_set *next;
-    struct generic_list *dfa_states; /* one or multiple DFA states merged up to
+    struct generic_list dfa_states; /* one or multiple DFA states merged up to
                                       * this state set*/
 };
 
@@ -138,3 +140,28 @@ static struct __DFA_state_set *initialize_DFA_state_set(
 /*         break; */
 /*     } */
 /* } */
+
+
+
+
+
+/* Compile basic regular expression to NFA */
+struct NFA reg_to_NFA(const char *regexp);
+
+/* Convert an NFA to DFA, this function returns the start state of the
+ * resulting DFA */
+struct DFA_state *NFA_to_DFA(const struct NFA *nfa);
+
+
+void test(void)
+{
+    struct NFA nfa = reg_to_NFA('(a|b)*c');
+    struct DFA_state *dfa = NFA_to_DFA(&nfa);
+
+    struct __DFA_state_set *ss = initialize_DFA_state_set(dfa);
+    
+
+    NFA_dispose(&nfa);
+    DFA_dispose(dfa);
+    return 0;
+}

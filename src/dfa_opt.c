@@ -171,12 +171,14 @@ static int spawn_distinguishable_states(
 
     int i_state = 0, n_states = state_set->dfa_states.length;
 
+    create_generic_list(struct DFA_state *, &state_spawn_0);
+    create_generic_list(struct DFA_state *, &state_spawn_1);
 
-    target = DFA_target_of_trans(*state, c);
-    ref = (target == NULL ? NULL : __find_state_set(ll_head, target));
+    /* use first state as reference */
+    ref = __find_state_set(ll_head, DFA_target_of_trans(*state, c));
+    generic_list_push_back(&state_spawn_0, state);
 
-    i_state++, state++;
-    
+    i_state++, state++;    
     for ( ; i_state < n_states; i_state++, state++)
     {
         target = DFA_target_of_trans(*state, c);
@@ -254,15 +256,18 @@ void test(void)
 
 
     struct __DFA_state_set *ss = initialize_DFA_state_set(dfa);
-    struct __DFA_state_set *cur = ss->next;
 
-    /* DFA_dump_graphviz_code(dfa, stdout); */
+    FILE *fp = fopen("out.dot", "w");
+    DFA_dump_graphviz_code(dfa, fp);
+    fclose(fp);
+
 
     __dump_DFA_state_set(ss);
 
-    for ( ; cur != ss; cur = cur->next) {
-        printf("%d\n", cur->dfa_states.length);
-    }
+    spawn_distinguishable_states(ss, ss->next, 'a');
+
+    __dump_DFA_state_set(ss);
+
     
     __destroy_DFA_stateset_list(ss);
 

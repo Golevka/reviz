@@ -1,13 +1,13 @@
 * reviz - Visualize NFA and DFA constructed from basic regexp
 
 
-This program takes a simple regular expression from command line argument and
-generate DOT files named nfa.dot and dfa.dot in current working directory,
-which are the finite automatons constructed from that regular expression. These
-dot files can be converted to various image formats by graphviz.
+This program takes a simple regular expression from commandline and generate
+DOT files named nfa.dot and dfa.dot in current working directory, which are the
+finite automatons constructed from that regular expression. These dot files can
+be converted to various image formats by graphviz.
 
 =reviz= is a simple wrapper which calls =redot= and converts generated dot
-files to PostScript format, so the result can be displayed immediately with
+files to PostScript format, so the results can be displayed immediately with
 various document viewer programs.
 
 

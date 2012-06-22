@@ -50,6 +50,17 @@ void DFA_make_acceptable(struct DFA_state *state);
 void DFA_add_transition(
     struct DFA_state *from, struct DFA_state *to, char trans_char);
 
+/* Get the target state of specified state under certain transition, if there's
+ * no such transition then NULL is returned */
+struct DFA_state *DFA_target_of_trans(
+    struct DFA_state *state, char trans_char);
+
+
+/* Traverse from specified state and add all reachable states to a generic
+ * list */
+void DFA_traverse(
+    struct DFA_state *state, struct generic_list *visited);
+
 /* Generate DOT code to vizualize the DFA */
 void DFA_dump_graphviz_code(const struct DFA_state *start_state, FILE *fp);
 

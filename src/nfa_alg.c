@@ -30,8 +30,8 @@ static void __NFA_transition_dump_graphviz(
     }
 }
 
-/* dump all reachable states of state */
-static void __NFA_states_dump_graphviz(
+/* dump the transitions to *all reachable* states from specified state */
+static void __NFA_reachable_states_dump_graphviz(
     const struct NFA_state *state, struct generic_list *visited, FILE *fp)
 {
     int n_to = NFA_state_transition_num(state);
@@ -46,7 +46,7 @@ static void __NFA_states_dump_graphviz(
          * the same way with DFS. */
         if (generic_list_add(
                 visited, &state->to[i_to], __cmp_addr) != 0) {
-            __NFA_states_dump_graphviz(state->to[i_to], visited, fp);
+            __NFA_reachable_states_dump_graphviz(state->to[i_to], visited, fp);
         }
     }
 }
@@ -67,7 +67,7 @@ void NFA_dump_graphviz_code(const struct NFA *nfa, FILE *fp)
 
     /* dump the finite state machine recursively */
     generic_list_push_back(&visited_state, &nfa->start);
-    __NFA_states_dump_graphviz(nfa->start, &visited_state, fp);
+    __NFA_reachable_states_dump_graphviz(nfa->start, &visited_state, fp);
 
     /* dump start mark */
     fprintf(fp, "    node [shape = none label=\"\"]; start\n");

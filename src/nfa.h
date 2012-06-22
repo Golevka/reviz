@@ -10,7 +10,7 @@
    (NFATT here means "NFA transition type") */
 enum NFA_transition_type {
     NFATT_NONE,        /* placeholder */
-    NFATT_CHARACTER,   /* "traditional" alphabet transition */
+    NFATT_CHARACTER,   /* "traditional" transition */
     NFATT_EPSILON      /* epsilon transition */
 };
 
@@ -18,9 +18,9 @@ enum NFA_transition_type {
 struct NFA_transition
 {
     /* type of the transition. It can be an epsilon transition, traditional
-     * alphabet transition, or just a placeholder  */
+     * character transition, or just a placeholder  */
     enum NFA_transition_type trans_type;
-    char trans_char;   /* If trans_type is TT_ALPHABET, then trans_char
+    char trans_char;   /* If trans_type is TT_CHARACTER, then trans_char
                         * indicates the transition label */
 };
 
@@ -74,13 +74,17 @@ void NFA_dump_graphviz_code(const struct NFA *nfa, FILE *fp);
 int NFA_pattern_match(const struct NFA *nfa, const char *str);
 
 
-/* Operators in regular expression */
+/* The smallest building block of regexp-NFA */
 struct NFA NFA_create_atomic(char c);                                 /* c   */
+
+/* Operators in regular expression, we could assemble NFAs with these methods
+ * to build our final NFA for the regular expression. */
 struct NFA NFA_concatenate(const struct NFA *A, const struct NFA *B); /* AB  */
 struct NFA NFA_alternate(const struct NFA *A, const struct NFA *B);   /* A|B */
 struct NFA NFA_optional(const struct NFA *A);                         /* A?  */
 struct NFA NFA_Kleene_closure(const struct NFA *A);                   /* A*  */
 struct NFA NFA_positive_closure(const struct NFA *A);                 /* A+  */
+
 
 /* Free an NFA */
 void NFA_dispose(struct NFA *nfa);

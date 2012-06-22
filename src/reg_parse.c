@@ -103,7 +103,9 @@ static struct NFA __LL_primary(char **statement)
 struct NFA reg_to_NFA(const char *regexp)
 {
     char **cur = (char **)(&regexp);
-    struct NFA nfa = __LL_expression(cur);
+    struct NFA nfa = __LL_expression(cur); /* creating NFA for regexp is just
+                                            * like assembling building blocks
+                                            * as what the regexp says */
 
     if (**cur != '\0') {
         fprintf(stderr, "unexcepted character \"%c\"\n", **cur);

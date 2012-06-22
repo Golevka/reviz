@@ -10,5 +10,4 @@ glist.o src/dep/glist.d : src/glist.c /usr/include/stdlib.h /usr/include/feature
  /usr/include/bits/sigset.h /usr/include/bits/time.h \
  /usr/include/sys/sysmacros.h /usr/include/bits/pthreadtypes.h \
  /usr/include/alloca.h /usr/include/assert.h /usr/include/string.h \
- /usr/include/xlocale.h /usr/include/bits/string.h \
- /usr/include/bits/string2.h src/glist.h
+ /usr/include/xlocale.h src/glist.h

@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "glist.h"
+
 
 struct DFA_state;   /* forward type declaration */
 

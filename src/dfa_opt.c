@@ -102,7 +102,7 @@ static struct __DFA_state_set *initialize_DFA_state_set(
     /* Initialize state sets by placing all acceptable states to the acceptable
      * list, non-acceptable states goes to nonacceptable list */
     for (state = (struct DFA_state *) state_list.p_dat; 
-         i_state < n_state; i_state++)
+         i_state < n_state; i_state++, state++)
     {
         state->is_acceptable ? 
             generic_list_push_back(&acceptable,    &state):
@@ -113,6 +113,7 @@ static struct __DFA_state_set *initialize_DFA_state_set(
     __insert_states_after(&nonacceptable, ll_state_set);
 
     destroy_generic_list(&state_list);
+    return ll_state_set;
 }
 
 
@@ -155,13 +156,17 @@ struct DFA_state *NFA_to_DFA(const struct NFA *nfa);
 
 void test(void)
 {
-    struct NFA nfa = reg_to_NFA('(a|b)*c');
+    struct NFA nfa = reg_to_NFA("(a|b)*c");
     struct DFA_state *dfa = NFA_to_DFA(&nfa);
 
     struct __DFA_state_set *ss = initialize_DFA_state_set(dfa);
+    struct __DFA_state_set *cur = ss->next;
+
+    for ( ; cur != ss; cur = cur->next) {
+        printf("%d\n", cur->dfa_states.length);
+    }
     
 
     NFA_dispose(&nfa);
     DFA_dispose(dfa);
-    return 0;
 }

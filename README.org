@@ -1,5 +1,6 @@
 * reviz - Visualize NFA and DFA constructed from basic regexp
 
+[[https://github.com/Golevka/reviz/raw/master/sample/fa.png]]
 
 ** Try It
 

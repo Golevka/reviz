@@ -1,6 +1,8 @@
 * reviz - Visualize NFA and DFA constructed from basic regexp
 
-[[https://github.com/Golevka/reviz/raw/master/sample/fa.png]]
+#+CAPTION: Finite automatons constructed from ((a|b|c)*|(d|e)+)f
+#+ATTR_HTML: alt="finite_automatons"
+[[[[https://github.com/Golevka/reviz/raw/master/sample/fa.png]]]]
 
 ** Try It
 

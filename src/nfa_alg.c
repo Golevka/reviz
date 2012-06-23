@@ -54,7 +54,6 @@ static void __NFA_reachable_states_dump_graphviz(
 /* Dump DOT code to vizualize specified NFA */
 void NFA_dump_graphviz_code(const struct NFA *nfa, FILE *fp)
 {
-    /* prepare a stack for recursive dump */
     struct generic_list visited_state;
     create_generic_list(struct NFA_state*, &visited_state);
 

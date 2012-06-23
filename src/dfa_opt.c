@@ -8,92 +8,7 @@
 MAKE_COMPARE_FUNCTION(addr, struct DFA_state*)
 MAKE_COMPARE_FUNCTION(char, char)
 
-
-/* Each state set contains one or more DFA states, DFA optimization procedure
- * is to merge multiple undistinguished states to one unique state, which
- * decreases the number of states/transitions of the resulting DFA.
- *
- * We have a generic list named dfa_states containing all DFA states in this
- * state set, it is also equiped with a pair of pointers to make it a node in a
- * linked list, the linked list represents the resulting DFA, and each node
- * (state set) is a state of it.
- */
-struct __DFA_state_set
-{
-    struct __DFA_state_set *prev;
-    struct __DFA_state_set *next;
-    struct generic_list dfa_states; /* one or multiple DFA states merged up to
-                                      * this state set*/
-};
-
-
-static struct __DFA_state_set *__create_empty_stateset_list(void)
-{
-    struct __DFA_state_set *head = 
-        (struct __DFA_state_set *) malloc(sizeof(struct __DFA_state_set));
-
-    /* doubly linked list */
-    head->prev = head->next = head;
-    head->dfa_states.length = 0;
-
-    return head;
-}
-
-static void __destroy_DFA_stateset_list(struct __DFA_state_set *head)
-{
-    struct __DFA_state_set *cur = head->next, *next;
-    free(head);           /* free head node first  */
-
-    /* then free the rest of the list */
-    for ( ; cur != head; cur = next)
-    {
-        next = cur->next;
-        destroy_generic_list(&cur->dfa_states);
-        free(cur);
-    }    
-}
-
-static struct __DFA_state_set *__find_state_set(
-    struct __DFA_state_set *ll_head, const struct DFA_state *state)
-{
-    struct __DFA_state_set *cur = ll_head->next;
-    for ( ; cur != ll_head; cur = cur->next)
-    {
-        if (generic_list_find(&cur->dfa_states, &state, __cmp_addr) != NULL) {
-            return cur;
-        }
-    }
-
-    return NULL;
-}
-
-static void __insert_DFA_state_set_after(
-    struct __DFA_state_set *e, struct __DFA_state_set *pivot)
-{
-    e->prev = pivot;
-    e->next = pivot->next;
-    pivot->next->prev = e;
-    pivot->next = e;
-}
-
-static void __insert_states_after(
-    const struct generic_list *states, struct __DFA_state_set *pivot)
-{
-    struct __DFA_state_set *new_node = 
-        (struct __DFA_state_set *) malloc(sizeof(struct __DFA_state_set));
-
-    new_node->dfa_states = *states;
-    __insert_DFA_state_set_after(new_node, pivot);
-}
-
-static void __remove_DFA_state_set(struct __DFA_state_set *state_set)
-{
-    state_set->prev->next = state_set->next;
-    state_set->next->prev = state_set->prev;
-    
-    destroy_generic_list(&state_set->dfa_states);
-    free(state_set);
-}
+#include "__dfa_state_set.h"
 
 
 /* stuff all transition characters emitted by specified state to trans_chars */
@@ -113,15 +28,17 @@ static void __DFA_state_collect_transition_chars(
 static void DFA_states_collect_transition_chars(
     const struct generic_list *states, struct generic_list *trans_chars)
 {
-    const struct DFA_state *state = (const struct DFA_state*)states->p_dat;
+    struct DFA_state **state = (struct DFA_state **) states->p_dat;
     int i_state = 0, n_states = states->length;
 
     for ( ; i_state < n_states; i_state++, state++) {
-        __DFA_state_collect_transition_chars(state, trans_chars);
+        __DFA_state_collect_transition_chars(*state, trans_chars);
     }
 }
 
 
+/* Initialize 2 state sets for DFA optimization process, one for all
+ * non-acceptable states, one for the rest of them (acceptable states). */
 static struct __DFA_state_set *initialize_DFA_state_set(
     struct DFA_state *dfa_start)
 {
@@ -157,6 +74,13 @@ static struct __DFA_state_set *initialize_DFA_state_set(
 }
 
 
+/* Spawn state_set to 2 distinguishable state sets by looking at if states in
+ * state_set are distinguishable under transition c 
+
+                   c   state_spawn_0
+       state_set ----<
+                       state_spawn_1
+ */
 static int spawn_distinguishable_states(
     struct __DFA_state_set *ll_head,
     struct __DFA_state_set *state_set, char c)
@@ -174,7 +98,8 @@ static int spawn_distinguishable_states(
     create_generic_list(struct DFA_state *, &state_spawn_0);
     create_generic_list(struct DFA_state *, &state_spawn_1);
 
-    /* use first state as reference */
+    /* use first state as reference, all states transitting to ref goes to
+     * state_spawn_0, otherwise pushed to state_spawn_1 */
     ref = __find_state_set(ll_head, DFA_target_of_trans(*state, c));
     generic_list_push_back(&state_spawn_0, state);
 
@@ -182,40 +107,64 @@ static int spawn_distinguishable_states(
     for ( ; i_state < n_states; i_state++, state++)
     {
         target = DFA_target_of_trans(*state, c);
+
         if (ref != NULL)
-        {
             if (target != NULL)
-            {
                 ref == __find_state_set(ll_head, target) ?
                     generic_list_push_back(&state_spawn_0, state):
                     generic_list_push_back(&state_spawn_1, state);
-            }
-            else {
+
+            else   /* no such transition */
                 generic_list_push_back(&state_spawn_1, state);
-            }
-        }
+
         else
-        {
             target != NULL ?
                 generic_list_push_back(&state_spawn_1, state):
                 generic_list_push_back(&state_spawn_0, state);
-        }
     }
 
-    if (state_spawn_1.length != 0)
+    /* we're done splitting the state set, now it's time to submit our 
+     * changes */
+    if (state_spawn_1.length != 0) /* if we really splitted state_set to 2
+                                    * distinguishable states */
     {
         __insert_states_after(&state_spawn_1, state_set);
         __insert_states_after(&state_spawn_0, state_set);
         __remove_DFA_state_set(state_set);
         return 1;
     }
-    else {
+    else                        /* not splitted, no change to commit */
+    {
         destroy_generic_list(&state_spawn_0);
         destroy_generic_list(&state_spawn_1);
         return 0;
     }
 }
 
+
+static int __spawn_state_set(
+    struct __DFA_state_set *ll_head, struct __DFA_state_set *state_set)
+{
+    struct generic_list trans_chars;
+    int i_char = 0, n_chars;
+    char *c;
+
+    create_generic_list(char, &trans_chars);
+    DFA_states_collect_transition_chars(&state_set->dfa_states, &trans_chars);
+
+    n_chars = trans_chars.length;
+    for (c = (char*)trans_chars.p_dat; i_char < n_chars; i_char++, c++)
+    {
+        if (spawn_distinguishable_states(ll_head, state_set, *c))
+        {
+            destroy_generic_list(&trans_chars);
+            return 1;
+        }
+    }
+
+    destroy_generic_list(&trans_chars);
+    return 0;
+}
 
 
 /* Compile basic regular expression to NFA */
@@ -251,7 +200,7 @@ static void __dump_DFA_state_set(struct __DFA_state_set *ll_head)
 
 void test(void)
 {
-    struct NFA nfa = reg_to_NFA("(a|b)+c");
+    struct NFA nfa = reg_to_NFA("((a|b|c)+)|d|(e*|f)");
     struct DFA_state *dfa = NFA_to_DFA(&nfa);
 
 
@@ -264,9 +213,35 @@ void test(void)
 
     __dump_DFA_state_set(ss);
 
-    spawn_distinguishable_states(ss, ss->next, 'a');
+    /* spawn_distinguishable_states(ss, ss->next, 'd'); */
+    struct __DFA_state_set *cur, *next;
+    int changed;
 
-    __dump_DFA_state_set(ss);
+    do {
+        changed = 0;
+        for (cur = ss->next; cur != ss; cur = next)
+        {
+            next = cur->next;
+            /* changed += __spawn_state_set(ss, cur); */
+            if (__spawn_state_set(ss, cur))
+            {
+                __dump_DFA_state_set(ss);
+                changed++;
+            }
+        }
+    } while (changed != 0);
+
+
+
+    /* __spawn_state_set(ss, ss->next->next); */
+    /* __dump_DFA_state_set(ss); */
+
+    /* __spawn_state_set(ss, ss->prev); */
+    /* __dump_DFA_state_set(ss); */
+
+    /* __spawn_state_set(ss, ss->next->next); */
+    /* __dump_DFA_state_set(ss); */
+
 
     
     __destroy_DFA_stateset_list(ss);

@@ -143,12 +143,24 @@ static void __DFA_reachable_states_dump_graphviz(
         /* fprintf(fp, "    node [shape = circle label=\"\"]\n"); */
 
 
-        fprintf(fp, "    node [shape = circle label=\"%p\"]; addr_%p\n", 
-            (void*) state, (void*) state);
+        if (state->is_acceptable)   /* source state */
+            fprintf(fp,
+                "    node [shape = doublecircle label=\"%p\"]; addr_%p\n",
+                (void*) state, (void*) state);      /* target state */
+        else
+            fprintf(fp, "    node [shape = circle label=\"%p\"]; addr_%p\n", 
+                (void*) state, (void*) state);
 
-        fprintf(fp, "    node [shape = circle label=\"%p\"]; addr_%p\n", 
-            (void*)state->trans[i_trans].to,
-            (void*)state->trans[i_trans].to);
+
+        if (state->trans[i_trans].to->is_acceptable)
+            fprintf(fp,
+                "    node [shape = doublecircle label=\"%p\"]; addr_%p\n",
+                (void*)state->trans[i_trans].to,
+                (void*)state->trans[i_trans].to);
+        else
+            fprintf(fp, "    node [shape = circle label=\"%p\"]; addr_%p\n", 
+                (void*)state->trans[i_trans].to,
+                (void*)state->trans[i_trans].to);
 
 
 

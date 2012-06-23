@@ -1,5 +1,5 @@
-dfa_opt.o src/dep/dfa_opt.d : src/dfa_opt.c src/glist.h src/dfa.h /usr/include/stdlib.h \
- /usr/include/features.h /usr/include/sys/cdefs.h \
+dfa_opt.o src/dep/dfa_opt.d : src/dfa_opt.c src/__dfa_state_set.h src/glist.h src/dfa.h \
+ /usr/include/stdlib.h /usr/include/features.h /usr/include/sys/cdefs.h \
  /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
  /usr/include/gnu/stubs-32.h \
  /usr/lib/gcc/i686-pc-linux-gnu/4.7.0/include/stddef.h \
@@ -13,5 +13,5 @@ dfa_opt.o src/dep/dfa_opt.d : src/dfa_opt.c src/glist.h src/dfa.h /usr/include/s
  /usr/include/alloca.h /usr/include/stdio.h /usr/include/libio.h \
  /usr/include/_G_config.h /usr/include/wchar.h \
  /usr/lib/gcc/i686-pc-linux-gnu/4.7.0/include/stdarg.h \
- /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h src/nfa.h \
- src/__dfa_state_set.h
+ /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
+ /usr/include/bits/stdio.h src/nfa.h

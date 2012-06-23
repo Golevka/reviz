@@ -10,8 +10,9 @@ dfa.o src/dep/dfa.d : src/dfa.c /usr/include/stdlib.h /usr/include/features.h \
  /usr/include/bits/sigset.h /usr/include/bits/time.h \
  /usr/include/sys/sysmacros.h /usr/include/bits/pthreadtypes.h \
  /usr/include/alloca.h /usr/include/string.h /usr/include/xlocale.h \
+ /usr/include/bits/string.h /usr/include/bits/string2.h \
  /usr/include/stdio.h /usr/include/libio.h /usr/include/_G_config.h \
  /usr/include/wchar.h \
  /usr/lib/gcc/i686-pc-linux-gnu/4.7.0/include/stdarg.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
- src/glist.h src/dfa.h
+ /usr/include/bits/stdio.h src/glist.h src/dfa.h

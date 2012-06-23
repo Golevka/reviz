@@ -13,4 +13,5 @@ nfa_base.o src/dep/nfa_base.d : src/nfa_base.c /usr/include/assert.h /usr/includ
  /usr/include/alloca.h /usr/include/stdio.h /usr/include/libio.h \
  /usr/include/_G_config.h /usr/include/wchar.h \
  /usr/lib/gcc/i686-pc-linux-gnu/4.7.0/include/stdarg.h \
- /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h
+ /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
+ /usr/include/bits/stdio.h

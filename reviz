@@ -7,6 +7,5 @@ rm -f nfa.dot dfa.dot dfa_opt.dot
 
 
 # sample run:
-# ./reviz '((a|b)+(cd)+)*'
 # ./reviz '((a|b|c)*|(d|e)+)f'
 

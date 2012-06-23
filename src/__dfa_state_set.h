@@ -1,3 +1,12 @@
+#include "glist.h"
+#include "dfa.h"
+
+#include "nfa.h"                /* to be removed after test */
+
+
+MAKE_COMPARE_FUNCTION(addr, struct DFA_state*)
+MAKE_COMPARE_FUNCTION(char, char)
+
 
 /* Each state set contains one or more DFA states, DFA optimization procedure
  * is to merge multiple undistinguished states to one unique state, which
@@ -12,21 +21,38 @@ struct __DFA_state_set
 {
     struct __DFA_state_set *prev;
     struct __DFA_state_set *next;
-    struct generic_list dfa_states; /* one or multiple DFA states merged up to
+
+    struct generic_list dfa_states;  /* one or multiple DFA states merged up to
                                       * this state set*/
+    struct DFA_state *merged_state;  /* DFA state created for this merged
+                                      * state */
 };
 
 
-static struct __DFA_state_set *__create_empty_stateset_list(void)
+static struct __DFA_state_set *__alloc_stateset_node(void)
 {
-    struct __DFA_state_set *head = 
+    struct __DFA_state_set *new_node = 
         (struct __DFA_state_set *) malloc(sizeof(struct __DFA_state_set));
 
-    /* doubly linked list */
+    new_node->prev = new_node->next = NULL;
+    new_node->dfa_states.length = 0;
+    new_node->merged_state = NULL;
+
+    return new_node;
+}
+
+static struct __DFA_state_set *__create_empty_stateset_list(void)
+{
+    struct __DFA_state_set *head = __alloc_stateset_node();
     head->prev = head->next = head;
-    head->dfa_states.length = 0;
 
     return head;
+}
+
+static void __free_DFA_state_set(struct __DFA_state_set *state_set)
+{
+    destroy_generic_list(&state_set->dfa_states);
+    free(state_set);
 }
 
 static void __destroy_DFA_stateset_list(struct __DFA_state_set *head)
@@ -38,8 +64,7 @@ static void __destroy_DFA_stateset_list(struct __DFA_state_set *head)
     for ( ; cur != head; cur = next)
     {
         next = cur->next;
-        destroy_generic_list(&cur->dfa_states);
-        free(cur);
+        __free_DFA_state_set(cur);
     }    
 }
 
@@ -69,8 +94,7 @@ static void __insert_DFA_state_set_after(
 static void __insert_states_after(
     const struct generic_list *states, struct __DFA_state_set *pivot)
 {
-    struct __DFA_state_set *new_node = 
-        (struct __DFA_state_set *) malloc(sizeof(struct __DFA_state_set));
+    struct __DFA_state_set *new_node = __alloc_stateset_node();
 
     new_node->dfa_states = *states;
     __insert_DFA_state_set_after(new_node, pivot);
@@ -81,8 +105,7 @@ static void __remove_DFA_state_set(struct __DFA_state_set *state_set)
     state_set->prev->next = state_set->next;
     state_set->next->prev = state_set->prev;
     
-    destroy_generic_list(&state_set->dfa_states);
-    free(state_set);
+    __free_DFA_state_set(state_set);
 }
 
 

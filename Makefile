@@ -6,6 +6,6 @@ OBJECT_PATH     := ./src/obj
 # LDLIBS := -lpthread
 CFLAGS += -Wall -Wextra -pedantic -g
 
-PROGRAM_NAME := run
+PROGRAM_NAME := redot
 
 include makefile.mk

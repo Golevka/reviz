@@ -1,13 +1,3 @@
-#include "glist.h"
-#include "dfa.h"
-
-#include "nfa.h"                /* to be removed after test */
-
-
-
-MAKE_COMPARE_FUNCTION(addr, struct DFA_state*)
-MAKE_COMPARE_FUNCTION(char, char)
-
 #include "__dfa_state_set.h"
 
 
@@ -67,8 +57,13 @@ static struct __DFA_state_set *initialize_DFA_state_set(
     }
 
     /* we've done constructing the 2 initial state sets */
-    __insert_states_after(&acceptable,    ll_state_set);
-    __insert_states_after(&nonacceptable, ll_state_set);
+    (acceptable.length != 0) ?
+        __insert_states_after(&acceptable, ll_state_set):
+        destroy_generic_list(&acceptable);
+
+    (nonacceptable.length != 0) ?
+        __insert_states_after(&nonacceptable, ll_state_set):
+        destroy_generic_list(&nonacceptable);
 
     destroy_generic_list(&state_list);
     return ll_state_set;
@@ -175,7 +170,7 @@ static int split_state_set(
     return 0;
 }
 
-
+/* Merge undistinguishable states in specified DFA to state sets */
 static struct __DFA_state_set *merge_DFA_states(struct DFA_state *dfa)
 {
     struct __DFA_state_set *ss = initialize_DFA_state_set(dfa);
@@ -187,47 +182,64 @@ static struct __DFA_state_set *merge_DFA_states(struct DFA_state *dfa)
         for (cur = ss->next; cur != ss; cur = next)
         {
             next = cur->next;
-            /* changed += __split_state_set(ss, cur); */
-            if (split_state_set(ss, cur))
-            {
-                __dump_DFA_state_set(ss);
-                changed++;
-            }
+            changed += split_state_set(ss, cur);
         }
     } while (changed != 0);
 
     return ss;
 }
 
-
-/* Compile basic regular expression to NFA */
-struct NFA reg_to_NFA(const char *regexp);
-
-/* Convert an NFA to DFA, this function returns the start state of the
- * resulting DFA */
-struct DFA_state *NFA_to_DFA(const struct NFA *nfa);
-
-
-
-void test(void)
+/* Make DFA out of specified collection of state sets */
+static struct DFA_state *make_optimized_DFA(
+    struct __DFA_state_set *head, struct DFA_state *start)
 {
-    struct NFA nfa = reg_to_NFA("((a|b|c)+)|d|(e*|f)");
-    struct DFA_state *dfa = NFA_to_DFA(&nfa);
+    struct __DFA_state_set *cur = head->next, *dest;
+    struct DFA_state **cur_state;
+    int i_state, n_state;
+    int i_trans;
+    char trans_char;
+
+    /* allocate DFA state for each merged states */
+    for ( ; cur != head; cur = cur->next) {
+        cur->merged_state = alloc_DFA_state();
+    }
+
+    /* add transitions to these merged states */
+    for (cur = head->next ; cur != head; cur = cur->next)
+    {
+        cur_state = (struct DFA_state **) cur->dfa_states.p_dat;
+        n_state   = cur->dfa_states.length;
+
+        for (i_state = 0; i_state < n_state; i_state++, cur_state++)
+        {
+            for (i_trans = 0; i_trans < (*cur_state)->n_transitions; i_trans++)
+            {
+                dest = __find_state_set(head, (*cur_state)->trans[i_trans].to);
+                trans_char = (*cur_state)->trans[i_trans].trans_char;
+
+                if (DFA_target_of_trans(cur->merged_state, trans_char) == NULL)
+                {
+                    DFA_add_transition(
+                        cur->merged_state, dest->merged_state, trans_char);
+                }
+            }
+
+            if ((*cur_state)->is_acceptable)
+                DFA_make_acceptable(cur->merged_state);
+        }
+    }
+
+    /* find the start state of the new DFA and return */
+    return __find_state_set(head, start)->merged_state;
+}
 
 
-    struct __DFA_state_set *ss;
-
-    FILE *fp = fopen("out.dot", "w");
-    DFA_dump_graphviz_code(dfa, fp);
-    fclose(fp);
-
-
-    ss = merge_DFA_states(dfa);
-
-    
+/* Simplify DFA by merging undistinguishable states */
+struct DFA_state *DFA_optimize(const struct DFA_state *dfa)
+{
+    struct DFA_state *_dfa = (struct DFA_state *) dfa;
+    struct __DFA_state_set *ss = merge_DFA_states(_dfa);
+    struct DFA_state *dfa_opt = make_optimized_DFA(ss, _dfa);
     __destroy_DFA_stateset_list(ss);
-
-
-    NFA_dispose(&nfa);
-    DFA_dispose(dfa);
+    return dfa_opt;
 }

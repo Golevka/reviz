@@ -128,40 +128,38 @@ static void __DFA_reachable_states_dump_graphviz(
 
     for ( ; i_trans < n_trans; i_trans++)
     {
-        /* /\* dump source state and target state, acceptable states are presented */
-        /*  * as double circles *\/ */
-        /* if (state->is_acceptable)   /\* source state *\/ */
-        /*     fprintf(fp,  */
-        /*         "    node [shape = doublecircle label=\"\"]; addr_%p\n",  */
-        /*         (void*)state);      /\* target state *\/ */
-
-        /* if (state->trans[i_trans].to->is_acceptable) */
-        /*     fprintf(fp,  */
-        /*         "    node [shape = doublecircle label=\"\"]; addr_%p\n",  */
-        /*         (void*)state->trans[i_trans].to); */
-
-        /* fprintf(fp, "    node [shape = circle label=\"\"]\n"); */
-
-
+        /* dump source state and target state, acceptable states are presented
+         * as double circles */
         if (state->is_acceptable)   /* source state */
             fprintf(fp,
-                "    node [shape = doublecircle label=\"%p\"]; addr_%p\n",
-                (void*) state, (void*) state);      /* target state */
-        else
-            fprintf(fp, "    node [shape = circle label=\"%p\"]; addr_%p\n", 
-                (void*) state, (void*) state);
-
+                "    node [shape = doublecircle label=\"\"]; addr_%p\n",
+                (void*)state);      /* target state */
 
         if (state->trans[i_trans].to->is_acceptable)
             fprintf(fp,
-                "    node [shape = doublecircle label=\"%p\"]; addr_%p\n",
-                (void*)state->trans[i_trans].to,
-                (void*)state->trans[i_trans].to);
-        else
-            fprintf(fp, "    node [shape = circle label=\"%p\"]; addr_%p\n", 
-                (void*)state->trans[i_trans].to,
+                "    node [shape = doublecircle label=\"\"]; addr_%p\n",
                 (void*)state->trans[i_trans].to);
 
+        fprintf(fp, "    node [shape = circle label=\"\"]\n");
+
+
+        /* if (state->is_acceptable)   /\* source state *\/ */
+        /*     fprintf(fp, */
+        /*         "    node [shape = doublecircle label=\"%p\"]; addr_%p\n", */
+        /*         (void*) state, (void*) state);      /\* target state *\/ */
+        /* else */
+        /*     fprintf(fp, "    node [shape = circle label=\"%p\"]; addr_%p\n",  */
+        /*         (void*) state, (void*) state); */
+
+        /* if (state->trans[i_trans].to->is_acceptable) */
+        /*     fprintf(fp, */
+        /*         "    node [shape = doublecircle label=\"%p\"]; addr_%p\n", */
+        /*         (void*)state->trans[i_trans].to, */
+        /*         (void*)state->trans[i_trans].to); */
+        /* else */
+        /*     fprintf(fp, "    node [shape = circle label=\"%p\"]; addr_%p\n",  */
+        /*         (void*)state->trans[i_trans].to, */
+        /*         (void*)state->trans[i_trans].to); */
 
 
         /* dump the transition from source state and target state */

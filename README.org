@@ -2,7 +2,8 @@
 
 #+CAPTION: Finite automatons constructed from ((a|b|c)*|(d|e)+)f
 #+ATTR_HTML: alt="finite_automatons"
-[[[[https://github.com/Golevka/reviz/raw/master/sample/fa.png]]]]
+[[https://github.com/Golevka/reviz/raw/master/sample/fa.png]]
+Finite automatons constructed from ((a|b|c)*|(d|e)+)f
 
 ** Try It
 

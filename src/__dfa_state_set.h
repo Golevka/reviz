@@ -84,3 +84,27 @@ static void __remove_DFA_state_set(struct __DFA_state_set *state_set)
     destroy_generic_list(&state_set->dfa_states);
     free(state_set);
 }
+
+
+/* ROUTINE FOR DEBUGGING */
+static void __dump_DFA_state_set(struct __DFA_state_set *ll_head)
+{
+    struct __DFA_state_set *cur = ll_head->next;
+
+    int i_state, n_state;
+    struct DFA_state **state;
+
+    for ( ; cur != ll_head; cur = cur->next)
+    {
+        state = (struct DFA_state **) cur->dfa_states.p_dat;
+        n_state = cur->dfa_states.length;
+
+        printf("%p : {", (void*) cur);
+        for (i_state = 0; i_state < n_state; i_state++, state++)
+        {
+            printf("  %p  ", (void*)(*state));
+        }
+        printf("}\n");
+    }
+    printf("\n");
+}

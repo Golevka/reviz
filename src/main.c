@@ -15,14 +15,17 @@ struct DFA_state *NFA_to_DFA(const struct NFA *nfa);
 /* Simplify DFA by merging undistinguishable states */
 struct DFA_state *DFA_optimize(const struct DFA_state *dfa);
 
-void RemoveSpaces(char *source) {
-  char *i = source;
-  char *j = source;
-  while (*j != 0) {
-    *i = *j++;
-    if (*i != ' ') i++;
-  }
-  *i = 0;
+// Function to remove all spaces from a given string
+void removeSpaces(char *str) {
+  // To keep track of non-space character count
+  int count = 0;
+
+  // Traverse the given string. If current character
+  // is not space, then place it at index 'count++'
+  for (int i = 0; str[i]; i++)
+    if (str[i] != ' ') str[count++] = str[i];  // here count is
+                                               // incremented
+  str[count] = '\0';
 }
 
 int main(int argc, char *argv[]) {
@@ -49,7 +52,7 @@ int main(int argc, char *argv[]) {
 
     /* parse regexp and generate NFA and DFA */
     printf("%s\n", argv[1]);
-    RemoveSpaces(argv[1]);
+    removeSpaces(argv[1]);
     printf("%s\n", argv[1]);
 
     nfa = reg_to_NFA(argv[1]);

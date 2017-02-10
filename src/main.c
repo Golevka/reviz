@@ -48,13 +48,11 @@ int main(int argc, char *argv[]) {
       exit(-1);
     }
 
-    fprintf(stderr, "regexp: %s\n", argv[1]);
+    fprintf(stderr, "regexp:        %s\n", argv[1]);
 
     /* parse regexp and generate NFA and DFA */
-    printf("%s\n", argv[1]);
     removeSpaces(argv[1]);
-    printf("%s\n", argv[1]);
-
+    // fprintf(stderr, "space removed: %s\n", argv[1]);
     nfa = reg_to_NFA(argv[1]);
     dfa = NFA_to_DFA(&nfa);
     dfa_opt = DFA_optimize(dfa);

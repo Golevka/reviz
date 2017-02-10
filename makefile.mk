@@ -59,3 +59,4 @@ $(DEPENDENCY_PATH)/%.d: %.c
 .PHONY: clean build
 clean:
 	rm -f $(object-list) $(dependency-list)
+	rm *.dot
